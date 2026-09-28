@@ -8,10 +8,9 @@ import { Input } from "#components/ui/input";
 import { Label } from "#components/ui/label";
 import { Alert, AlertDescription } from "#components/ui/alert";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -20,49 +19,32 @@ export default function RegisterPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Clear previous messages
     setError("");
     setSuccess("");
 
-    // Client-side validation
-    if (!name.trim()) {
-      setError("Please enter your name.");
-      return;
-    }
-
-    if (!email.trim()) {
-      setError("Please enter your email.");
-      return;
-    }
-
-    if (!password) {
-      setError("Please enter a password.");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+    // Basic client-side validation
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const { data, error } = await authClient.signUp.email({
-        name: name.trim(),
+      const { data, error } = await authClient.signIn.email({
         email: email.trim(),
         password,
       });
 
       if (error) {
-        console.error("Registration error:", error);
-
+        // Don't expose internal/server error details to users.
         setError(
-          error.message || "Unable to create your account. Please try again.",
+          error.message || "Unable to log in. Please check your credentials.",
         );
-
         return;
       }
 
@@ -71,17 +53,16 @@ export default function RegisterPage() {
         return;
       }
 
-      setSuccess("Account created successfully! Redirecting...");
+      setSuccess("Login successful! Redirecting...");
 
+      // Give the user a moment to see the success message.
       setTimeout(() => {
-        navigate("/chat", { replace: true });
+        navigate("/chat");
       }, 500);
     } catch (err) {
-      console.error("Registration error:", err);
+      console.error("Login error:", err);
 
-      setError(
-        "Something went wrong. Please check your connection and try again.",
-      );
+      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -102,17 +83,15 @@ export default function RegisterPage() {
         </div>
       </header>
 
-      {/* Register */}
+      {/* Login */}
       <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           {/* Heading */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Create your account
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
 
             <p className="mt-2 text-muted-foreground">
-              Join Chatter and start chatting with your friends.
+              Login to continue chatting with your friends.
             </p>
           </div>
 
@@ -132,27 +111,7 @@ export default function RegisterPage() {
               </Alert>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-5">
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setError("");
-                  }}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
+            <form onSubmit={handleLogin} className="space-y-5">
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -175,14 +134,23 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
 
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -191,10 +159,6 @@ export default function RegisterPage() {
                   disabled={isLoading}
                   required
                 />
-
-                <p className="text-xs text-muted-foreground">
-                  Password must be at least 8 characters.
-                </p>
               </div>
 
               {/* Submit */}
@@ -204,18 +168,18 @@ export default function RegisterPage() {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
 
-            {/* Login */}
+            {/* Register */}
             <div className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Don't have an account?{" "}
               <Link
-                to="/login"
+                to="/register"
                 className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
               >
-                Login
+                Create an account
               </Link>
             </div>
           </div>
