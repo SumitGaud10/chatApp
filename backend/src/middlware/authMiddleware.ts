@@ -1,13 +1,14 @@
+import { RequestHandler } from "express";
 import { auth } from "../auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 
-const authMiddleware = async (req, res, next) => {
+const authMiddleware: RequestHandler = async (req, res, next) => {
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(req.headers),
   });
 
   if (!session) {
-    res.status(401).json({
+    return res.status(401).json({
       message: "User not authenticated",
     });
   }
